@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+
+
 # Kernel modules
 echo -e "overlay\nbr_netfilter" > /etc/modules-load.d/containerd.conf
 modprobe overlay
@@ -17,10 +19,20 @@ systemctl enable --now containerd
 wget https://github.com/opencontainers/runc/releases/download/v1.2.2/runc.amd64 -P /tmp/
 install -m 755 /tmp/runc.amd64 /usr/local/sbin/runc
 
-
+# Install CNI plugins
+wget https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz -P /tmp/
 mkdir -p /opt/cni/bin
-wget https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz -P /tmp/
-tar Cxzvf /opt/cni/bin /tmp/cni-plugins-linux-amd64-v1.6.2.tgz
+tar Cxzvf /opt/cni/bin /tmp/cni-plugins-linux-amd64-v1.6.1.tgz
+
+# Genereer config.toml en wijzig SystemdCgroup naar true
+mkdir -p /etc/containerd
+containerd config default | tee /etc/containerd/config.toml
+sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+systemctl restart containerd
+
+# Schakel swap uit
+swapoff -a
+sed -i '/ swap / s/^/#/' /etc/fstab
 
 # Kubernetes repo
 apt-get update
