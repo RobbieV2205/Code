@@ -15,3 +15,4 @@ if ($OldComputer -and $NewComputer) {
     Write-Host "Alle groepen zijn succesvol gekopieerd."
 } else {
     Write-Host "Een van de computerobjecten kon niet gevonden worden. Controleer de ingevoerde namen."
+    }
